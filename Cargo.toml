@@ -1,0 +1,15 @@
+[package]
+name = "solana-pay"
+version = "0.1.0"
+authors = ["448 OG <superuser@448.africa>"]
+license = "MPL-2.0"
+edition = "2021"
+keywords = ["solana", "solana pay"]
+categories = ["cryptography::cryptocurrencies", "wasm"]
+homepage = "https://github.com/448-OG/SolanaPay"
+repository = "https://github.com/448-OG/SolanaPay"
+readme = "./README.md"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
