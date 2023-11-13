@@ -1,14 +1,13 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+#![no_std]
+#![forbid(unsafe_code)]
+#![deny(missing_docs)]
+#![doc = "../README.md"]
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+mod url_builder;
+pub use url_builder::*;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+mod errors;
+pub use errors::*;
+
+mod utils;
+pub use utils::*;
