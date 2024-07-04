@@ -1,20 +1,20 @@
-[package]
-name = "solana-pay"
+[workspace]
+members = ["lib"]
+
+resolver = "2"
+
+[workspace.package]
 version = "0.1.0"
 authors = ["448 OG <superuser@448.africa>"]
-license = "MPL-2.0"
+license = "Apache-2.0 OR MIT"
 edition = "2021"
 keywords = ["solana", "solana pay"]
 categories = ["cryptography::cryptocurrencies", "wasm"]
-homepage = "https://github.com/448-OG/SolanaPay"
-repository = "https://github.com/448-OG/SolanaPay"
+homepage = "https://github.com/448-engineering/SolanaPay"
+repository = "https://github.com/448-engineering/SolanaPay"
 readme = "./README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[dependencies]
-arrayvec = { version = "0.7.4", default-features = false, features = [
-    "zeroize",
-] }
+[workspace.dependencies]
 bs58 = { version = "0.5.0", default-features = false }
-curve25519-dalek = { version = "4.1.1", default-features = false, features = ["zeroize"] }
