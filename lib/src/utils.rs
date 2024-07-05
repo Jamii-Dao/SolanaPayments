@@ -11,6 +11,15 @@ impl Utils {
 
         Ok(buffer)
     }
+
+    pub fn is_on_ed25519_curve(bytes: &[u8; 32]) -> SolanaPayResult<bool> {
+        Ok(
+            curve25519_dalek::edwards::CompressedEdwardsY::from_slice(bytes)
+                .map_err(|_| SolanaPayError::InvalidEd25519PublicKey)?
+                .decompress()
+                .is_some(),
+        )
+    }
 }
 
 #[cfg(test)]
@@ -27,5 +36,23 @@ mod test_utils {
     fn test_invalid_base58() {
         let address = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DAA";
         assert!(Utils::parse_public_key(address).is_err());
+    }
+
+    #[test]
+    fn valid_point_on_curve() {
+        let address = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+        let public_key = Utils::parse_public_key(address).unwrap();
+
+        assert!(Utils::is_on_ed25519_curve(&public_key).is_ok());
+        assert!(Utils::is_on_ed25519_curve(&public_key).unwrap());
+    }
+
+    #[test]
+    fn invalid_point_not_on_curve() {
+        let address = "HqAi1JjEEVS6QRvNe7gC4z8pYTuKbWkdZqCuuDpZxxQW";
+        let public_key = Utils::parse_public_key(address).unwrap();
+
+        assert!(Utils::is_on_ed25519_curve(&public_key).is_ok());
+        assert!(!Utils::is_on_ed25519_curve(&public_key).unwrap());
     }
 }

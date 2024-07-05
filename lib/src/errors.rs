@@ -8,4 +8,6 @@ pub enum SolanaPayError {
     InvalidRecipientAmount,
     /// The Base58 str provided is invalid
     InvalidBase58Str,
+    /// Invalid Ed25519 public key
+    InvalidEd25519PublicKey,
 }
