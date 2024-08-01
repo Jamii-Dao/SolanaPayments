@@ -1,58 +1,48 @@
-use crate::{SolanaPayError, SolanaPayResult};
+pub const NATIVE_SOL_DECIMAL_COUNT: u8 = 9;
 
-pub struct Utils;
+pub struct RandomBytes<const N: usize>([u8; N]);
 
-impl Utils {
-    pub fn parse_public_key(base58_str: &str) -> SolanaPayResult<[u8; 32]> {
-        let mut buffer = [0u8; 32];
-        bs58::decode(base58_str)
-            .onto(&mut buffer)
-            .map_err(|_| SolanaPayError::InvalidBase58Str)?;
+impl<const N: usize> RandomBytes<N> {
+    pub fn new() -> Self {
+        use rand_chacha::ChaCha20Rng;
+        use rand_core::{RngCore, SeedableRng};
 
-        Ok(buffer)
-    }
+        let mut rng = ChaCha20Rng::from_entropy();
+        let mut buffer = [0u8; N];
+        rng.fill_bytes(&mut buffer);
 
-    pub fn is_on_ed25519_curve(bytes: &[u8; 32]) -> SolanaPayResult<bool> {
-        Ok(
-            curve25519_dalek::edwards::CompressedEdwardsY::from_slice(bytes)
-                .map_err(|_| SolanaPayError::InvalidEd25519PublicKey)?
-                .decompress()
-                .is_some(),
-        )
+        let outcome = Self(buffer);
+
+        buffer.fill(0);
+
+        outcome
     }
 }
 
-#[cfg(test)]
-mod test_utils {
-    use crate::Utils;
-
-    #[test]
-    fn test_valid_base58() {
-        let address = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
-        assert!(Utils::parse_public_key(address).is_ok());
+impl<const N: usize> core::fmt::Debug for RandomBytes<N> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RandomBytes(REDACTED)").finish()
     }
+}
 
-    #[test]
-    fn test_invalid_base58() {
-        let address = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DAA";
-        assert!(Utils::parse_public_key(address).is_err());
+impl<const N: usize> core::fmt::Display for RandomBytes<N> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("RandomBytes(REDACTED)").finish()
     }
+}
 
-    #[test]
-    fn valid_point_on_curve() {
-        let address = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
-        let public_key = Utils::parse_public_key(address).unwrap();
+impl<const N: usize> Drop for RandomBytes<N> {
+    fn drop(&mut self) {
+        use zeroize::Zeroize;
 
-        assert!(Utils::is_on_ed25519_curve(&public_key).is_ok());
-        assert!(Utils::is_on_ed25519_curve(&public_key).unwrap());
+        self.zeroize()
     }
+}
 
-    #[test]
-    fn invalid_point_not_on_curve() {
-        let address = "HqAi1JjEEVS6QRvNe7gC4z8pYTuKbWkdZqCuuDpZxxQW";
-        let public_key = Utils::parse_public_key(address).unwrap();
+impl<const N: usize> zeroize::Zeroize for RandomBytes<N> {
+    fn zeroize(&mut self) {
+        self.0.fill(0);
 
-        assert!(Utils::is_on_ed25519_curve(&public_key).is_ok());
-        assert!(!Utils::is_on_ed25519_curve(&public_key).unwrap());
+        assert_eq!(self.0, [0u8; N]); //Must panic if memory cannot be zeroized
     }
 }
