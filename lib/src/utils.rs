@@ -1,4 +1,32 @@
+use crate::{SolanaPayError, SolanaPayResult};
+
 pub const NATIVE_SOL_DECIMAL_COUNT: u8 = 9;
+
+pub struct Utils;
+
+impl Utils {
+    pub fn from_base58(base58_str: &str) -> SolanaPayResult<[u8; 32]> {
+        let mut buffer = [0u8; 32];
+        bs58::decode(base58_str)
+            .onto(&mut buffer)
+            .map_err(|_| SolanaPayError::InvalidBase58Str)?;
+
+        Ok(buffer)
+    }
+
+    pub fn to_base58(bytes: impl AsRef<[u8]>) -> String {
+        bs58::encode(bytes.as_ref()).into_string()
+    }
+
+    pub fn is_on_curve25519(bytes: &[u8; 32]) -> SolanaPayResult<bool> {
+        Ok(
+            curve25519_dalek::edwards::CompressedEdwardsY::from_slice(bytes)
+                .map_err(|_| SolanaPayError::InvalidEd25519PublicKey)?
+                .decompress()
+                .is_some(),
+        )
+    }
+}
 
 pub struct RandomBytes<const N: usize>([u8; N]);
 

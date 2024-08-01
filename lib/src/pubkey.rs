@@ -1,31 +1,35 @@
 use core::fmt;
 
-use crate::{SolanaPayError, SolanaPayResult};
+use crate::{SolanaPayResult, Utils};
 
 #[derive(Default, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
 pub struct PublicKey(pub [u8; 32]);
 
 impl PublicKey {
     pub fn from_base58(base58_str: &str) -> SolanaPayResult<Self> {
-        let mut buffer = [0u8; 32];
-        bs58::decode(base58_str)
-            .onto(&mut buffer)
-            .map_err(|_| SolanaPayError::InvalidBase58Str)?;
+        let outcome = Utils::from_base58(base58_str)?;
 
-        Ok(Self(buffer))
+        Ok(Self(outcome))
     }
 
     pub fn to_base58(&self) -> String {
-        bs58::encode(&self.0).into_string()
+        Utils::to_base58(self.0)
     }
 
     pub fn is_on_ed25519_curve(&self) -> SolanaPayResult<bool> {
-        Ok(
-            curve25519_dalek::edwards::CompressedEdwardsY::from_slice(&self.0)
-                .map_err(|_| SolanaPayError::InvalidEd25519PublicKey)?
-                .decompress()
-                .is_some(),
-        )
+        Utils::is_on_curve25519(&self.0)
+    }
+
+    pub fn to_bytes(&self) -> [u8; 32] {
+        self.0
+    }
+
+    pub fn borrow(&self) -> &[u8; 32] {
+        &self.0
+    }
+
+    pub fn as_slice(&self) -> &[u8] {
+        &self.as_ref()
     }
 }
 
@@ -38,6 +42,12 @@ impl fmt::Debug for PublicKey {
 impl fmt::Display for PublicKey {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", &self.to_base58())
+    }
+}
+
+impl AsRef<[u8]> for PublicKey {
+    fn as_ref(&self) -> &[u8] {
+        &self.0
     }
 }
 
