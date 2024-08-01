@@ -7,6 +7,8 @@ pub struct Number {
     pub integral: u64,
     /// The fractional part of a number with a fraction
     pub fractional: Option<u64>,
+    /// Number of fractional values
+    pub fractional_count: usize,
 }
 
 impl Number {
@@ -16,35 +18,35 @@ impl Number {
             return Ok(Self {
                 integral: str_number
                     .parse::<u64>()
-                    .map_err(|_| SolanaPayError::InvalidRecipientAmount)?,
-                fractional: None,
+                    .map_err(|_| SolanaPayError::InvalidNumber)?,
+                ..Default::default()
             });
         }
 
         let (str_integral, str_fractional) = {
             let mut iter_str_number = str_number.split(".");
             if iter_str_number.clone().skip(2).next().is_some() {
-                return Err(SolanaPayError::InvalidRecipientAmount);
+                return Err(SolanaPayError::InvalidNumber);
             }
 
             let str_integral = iter_str_number
                 .next()
-                .ok_or(SolanaPayError::InvalidRecipientAmount)?;
+                .ok_or(SolanaPayError::InvalidNumber)?;
 
             let str_fractional = iter_str_number
                 .next()
-                .ok_or(SolanaPayError::InvalidRecipientAmount)?;
+                .ok_or(SolanaPayError::InvalidNumber)?;
 
             (str_integral, str_fractional)
         };
 
         let integral = str_integral
             .parse::<u64>()
-            .map_err(|_| SolanaPayError::InvalidRecipientAmount)?;
+            .map_err(|_| SolanaPayError::InvalidNumber)?;
 
         let fractional = str_fractional
             .parse::<u64>()
-            .map_err(|_| SolanaPayError::InvalidRecipientAmount)?;
+            .map_err(|_| SolanaPayError::InvalidNumber)?;
 
         let fractional = if fractional == 0 {
             None
@@ -52,10 +54,28 @@ impl Number {
             Some(fractional)
         };
 
+        let fractional_count = Self::fractional_count(fractional);
+
         Ok(Self {
             integral,
             fractional,
+            fractional_count,
         })
+    }
+
+    pub fn fractional_count(fractional_value: Option<u64>) -> usize {
+        let mut count = 0usize;
+
+        if let Some(value_exists) = fractional_value {
+            let mut value = value_exists;
+
+            while value != 0 {
+                count += 1;
+                value /= 10;
+            }
+        }
+
+        count
     }
 }
 
@@ -73,7 +93,8 @@ mod test_number_sanity {
             parsed,
             Number {
                 integral: 1,
-                fractional: None
+                fractional: None,
+                fractional_count: 0
             }
         );
     }
@@ -88,7 +109,8 @@ mod test_number_sanity {
             parsed,
             Number {
                 integral: 0,
-                fractional: Some(1)
+                fractional: Some(1),
+                fractional_count: 1
             }
         );
     }
@@ -99,7 +121,7 @@ mod test_number_sanity {
 
         let parsed = Number::parse(foo);
 
-        assert_eq!(parsed, Err(crate::SolanaPayError::InvalidRecipientAmount));
+        assert_eq!(parsed, Err(crate::SolanaPayError::InvalidNumber));
     }
 
     #[test]
@@ -108,7 +130,7 @@ mod test_number_sanity {
 
         let parsed = Number::parse(foo);
 
-        assert_eq!(parsed, Err(crate::SolanaPayError::InvalidRecipientAmount));
+        assert_eq!(parsed, Err(crate::SolanaPayError::InvalidNumber));
     }
 
     #[test]
@@ -117,7 +139,7 @@ mod test_number_sanity {
 
         let parsed = Number::parse(foo);
 
-        assert_eq!(parsed, Err(crate::SolanaPayError::InvalidRecipientAmount));
+        assert_eq!(parsed, Err(crate::SolanaPayError::InvalidNumber));
     }
 
     #[test]
@@ -126,7 +148,7 @@ mod test_number_sanity {
 
         let parsed = Number::parse(foo);
 
-        assert_eq!(parsed, Err(crate::SolanaPayError::InvalidRecipientAmount));
+        assert_eq!(parsed, Err(crate::SolanaPayError::InvalidNumber));
     }
 
     #[test]
@@ -135,7 +157,7 @@ mod test_number_sanity {
 
         let parsed = Number::parse(foo);
 
-        assert_eq!(parsed, Err(crate::SolanaPayError::InvalidRecipientAmount));
+        assert_eq!(parsed, Err(crate::SolanaPayError::InvalidNumber));
     }
 
     #[test]
@@ -144,6 +166,24 @@ mod test_number_sanity {
 
         let parsed = Number::parse(foo);
 
-        assert_eq!(parsed, Err(crate::SolanaPayError::InvalidRecipientAmount));
+        assert_eq!(parsed, Err(crate::SolanaPayError::InvalidNumber));
+    }
+
+    #[test]
+    fn count_is_valid() {
+        let fractional = Some(1u64);
+        let count = Number::fractional_count(fractional);
+
+        assert_eq!(count, 1);
+
+        let fractional = Some(146_785u64);
+        let count = Number::fractional_count(fractional);
+
+        assert_eq!(count, 6);
+
+        let fractional = Some(146_780u64);
+        let count = Number::fractional_count(fractional);
+
+        assert_eq!(count, 6);
     }
 }
