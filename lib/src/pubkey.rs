@@ -6,7 +6,7 @@ use crate::{SolanaPayError, SolanaPayResult};
 pub struct PublicKey(pub [u8; 32]);
 
 impl PublicKey {
-    pub fn parse_public_key(base58_str: &str) -> SolanaPayResult<Self> {
+    pub fn from_base58(base58_str: &str) -> SolanaPayResult<Self> {
         let mut buffer = [0u8; 32];
         bs58::decode(base58_str)
             .onto(&mut buffer)
@@ -15,7 +15,7 @@ impl PublicKey {
         Ok(Self(buffer))
     }
 
-    pub fn public_key_to_base58(&self) -> String {
+    pub fn to_base58(&self) -> String {
         bs58::encode(&self.0).into_string()
     }
 
@@ -31,13 +31,13 @@ impl PublicKey {
 
 impl fmt::Debug for PublicKey {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "PublicKey({})", &self.public_key_to_base58())
+        write!(f, "PublicKey({})", &self.to_base58())
     }
 }
 
 impl fmt::Display for PublicKey {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", &self.public_key_to_base58())
+        write!(f, "{}", &self.to_base58())
     }
 }
 
@@ -48,19 +48,19 @@ mod test_pubkey {
     #[test]
     fn test_valid_base58() {
         let address = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
-        assert!(PublicKey::parse_public_key(address).is_ok());
+        assert!(PublicKey::from_base58(address).is_ok());
     }
 
     #[test]
     fn test_invalid_base58() {
         let address = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DAA";
-        assert!(PublicKey::parse_public_key(address).is_err());
+        assert!(PublicKey::from_base58(address).is_err());
     }
 
     #[test]
     fn valid_point_on_curve() {
         let address = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
-        let public_key = PublicKey::parse_public_key(address).unwrap();
+        let public_key = PublicKey::from_base58(address).unwrap();
 
         assert!(PublicKey::is_on_ed25519_curve(&public_key).is_ok());
         assert!(PublicKey::is_on_ed25519_curve(&public_key).unwrap());
@@ -69,7 +69,7 @@ mod test_pubkey {
     #[test]
     fn invalid_point_not_on_curve() {
         let address = "HqAi1JjEEVS6QRvNe7gC4z8pYTuKbWkdZqCuuDpZxxQW";
-        let public_key = PublicKey::parse_public_key(address).unwrap();
+        let public_key = PublicKey::from_base58(address).unwrap();
 
         assert!(PublicKey::is_on_ed25519_curve(&public_key).is_ok());
         assert!(!PublicKey::is_on_ed25519_curve(&public_key).unwrap());
