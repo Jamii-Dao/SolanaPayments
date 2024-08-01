@@ -17,6 +17,14 @@ impl<const N: usize> RandomBytes<N> {
 
         outcome
     }
+
+    pub fn expose(&self) -> &[u8; N] {
+        &self.0
+    }
+
+    pub fn expose_owned(&self) -> [u8; N] {
+        self.0
+    }
 }
 
 impl<const N: usize> core::fmt::Debug for RandomBytes<N> {
