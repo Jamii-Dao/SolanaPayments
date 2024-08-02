@@ -14,7 +14,7 @@ pub struct Number {
 impl Number {
     /// Parse a number that may contain a fractional part
     pub fn parse(str_number: &str) -> SolanaPayResult<Self> {
-        if !str_number.contains(".") {
+        if !str_number.contains('.') {
             return Ok(Self {
                 integral: str_number
                     .parse::<u64>()
@@ -24,7 +24,7 @@ impl Number {
         }
 
         let (str_integral, str_fractional) = {
-            let mut iter_str_number = str_number.split(".");
+            let mut iter_str_number = str_number.split('.');
             if iter_str_number.clone().nth(2).is_some() {
                 return Err(SolanaPayError::InvalidNumber);
             }
