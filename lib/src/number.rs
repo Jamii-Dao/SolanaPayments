@@ -25,7 +25,7 @@ impl Number {
 
         let (str_integral, str_fractional) = {
             let mut iter_str_number = str_number.split(".");
-            if iter_str_number.clone().skip(2).next().is_some() {
+            if iter_str_number.clone().nth(2).is_some() {
                 return Err(SolanaPayError::InvalidNumber);
             }
 

@@ -94,3 +94,9 @@ impl<const N: usize> zeroize::Zeroize for RandomBytes<N> {
         assert_eq!(self.0, [0u8; N]); //Must panic if memory cannot be zeroized
     }
 }
+
+impl<const N: usize> Default for RandomBytes<N> {
+    fn default() -> Self {
+        Self::new()
+    }
+}

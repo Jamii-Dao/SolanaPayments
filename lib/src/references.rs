@@ -28,7 +28,7 @@ impl Reference {
     }
 
     pub fn to_base58(&self) -> String {
-        Utils::to_base58(&self.0)
+        Utils::to_base58(self.0)
     }
 
     pub fn from_base58(base58_str: &str) -> SolanaPayResult<Self> {

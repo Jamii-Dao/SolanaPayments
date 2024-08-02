@@ -24,12 +24,8 @@ impl PublicKey {
         self.0
     }
 
-    pub fn borrow(&self) -> &[u8; 32] {
-        &self.0
-    }
-
     pub fn as_slice(&self) -> &[u8] {
-        &self.as_ref()
+        self.as_ref()
     }
 }
 
