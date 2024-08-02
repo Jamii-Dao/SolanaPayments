@@ -16,6 +16,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+    - name: Run formatter
+      run: cargo fmt --all -- --config format_code_in_doc_comments=true --check
+    - name: Run clippy
+      run: cargo clippy -- -D warnings
+    - name: Install cargo deny
+      run: cargo install cargo-deny
+    - name: check licenses
+      run: cargo deny check licenses
     - name: Build
       run: cargo build --verbose
     - name: Run tests
