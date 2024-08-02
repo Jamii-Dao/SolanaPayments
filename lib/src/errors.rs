@@ -5,9 +5,26 @@ pub type SolanaPayResult<T> = Result<T, SolanaPayError>;
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum SolanaPayError {
     /// The `Amount` from the URL is invalid
-    InvalidRecipientAmount,
+    InvalidNumber,
     /// The Base58 str provided is invalid
     InvalidBase58Str,
     /// Invalid Ed25519 public key
     InvalidEd25519PublicKey,
+    /// The recipient is expected to be on curve
+    /// to prevent sending to a PDA without user's
+    /// knowledge. Use `new_all_accounts()` if you
+    /// want to support all types of recipients
+    ExpectedRecipientPublicKeyOnCurve,
+    /// The number of decimals in a number
+    /// exceeds those of Native SOL (9 decimals)
+    NumberOfDecimalsExceeds9,
+    /// The number of decimals in a number
+    /// exceeds those configured by the mint
+    NumberOfDecimalsExceedsMintConfiguration,
+    /// The capacity left in the references container
+    /// is smaller than the references provided
+    /// as arguments
+    TooManyReferences,
+    /// The characters contain Invalid UTF8
+    InvalidUrlEncodedString,
 }
