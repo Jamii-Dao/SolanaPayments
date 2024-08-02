@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use crate::{SolanaPayError, SolanaPayResult};
 
 pub const NATIVE_SOL_DECIMAL_COUNT: u8 = 9;
@@ -25,6 +27,16 @@ impl Utils {
                 .decompress()
                 .is_some(),
         )
+    }
+
+    pub fn url_decode(value: &str) -> SolanaPayResult<Cow<str>> {
+        percent_encoding::percent_decode_str(value)
+            .decode_utf8()
+            .map_err(|_| SolanaPayError::InvalidUrlEncodedString)
+    }
+
+    pub fn url_encode(value: &str) -> String {
+        percent_encoding::utf8_percent_encode(value, percent_encoding::NON_ALPHANUMERIC).to_string()
     }
 }
 
