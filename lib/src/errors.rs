@@ -27,4 +27,16 @@ pub enum SolanaPayError {
     TooManyReferences,
     /// The characters contain Invalid UTF8
     InvalidUrlEncodedString,
+    /// Invalid Parameter of a Solana Pay URL
+    InvalidQueryParam,
+    /// Found duplicate amount in a Solana Pay URL
+    AmountAlreadyExists,
+    /// Found duplicate spl-token in a Solana Pay URL
+    SplTokenAlreadyExists,
+    /// Found duplicate label in a Solana Pay URL
+    LabelAlreadyExists,
+    /// Found duplicate message in a Solana Pay URL
+    MessageAlreadyExists,
+    /// Found duplicate memo in a Solana Pay URL
+    MemoAlreadyExists,
 }
