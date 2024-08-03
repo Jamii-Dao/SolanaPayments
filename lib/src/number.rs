@@ -63,6 +63,7 @@ impl Number {
         })
     }
 
+    /// The number of decimal places in a number.
     pub fn fractional_count(fractional_value: Option<u64>) -> usize {
         let mut count = 0usize;
 

@@ -1,5 +1,9 @@
 #![forbid(unsafe_code)]
-//#![forbid(missing_docs)]
+#![forbid(missing_docs)]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/448-engineering/SolanaPayments/master/Brand-Collateral/solana-payments-icon.svg"
+)]
+#![doc = include_str!("../../README.md")]
 
 mod url;
 pub use url::*;

@@ -5,32 +5,40 @@ use constant_time_eq::constant_time_eq_n;
 
 use crate::{RandomBytes, SolanaPayResult, Utils};
 
+/// A Reference field as defined by the [Solana Pay Spec](https://docs.solanapay.com/spec#reference)
 #[derive(Clone, Copy)]
 pub struct Reference([u8; 32]);
 
 impl Reference {
+    /// Generate a new unique reference in case the reference just needs to be
+    /// a random 32 byte value instead on a valid public key with a corresponding private key.
     pub fn new() -> Self {
         let random = RandomBytes::new();
 
         Self(random.expose_owned())
     }
 
+    /// Generate a Blake3 hash of the reference
     pub fn to_hash(&self) -> blake3::Hash {
         blake3::hash(&self.0)
     }
 
-    pub fn expose_owned(&self) -> [u8; 32] {
+    /// Get the 32 byte array representation of a [Reference]
+    pub fn to_bytes(&self) -> [u8; 32] {
         self.0
     }
 
-    pub fn expose(&self) -> &[u8; 32] {
+    /// Get the 32 byte array representation of a [Reference]
+    pub fn as_bytes(&self) -> &[u8; 32] {
         &self.0
     }
 
+    /// Convert the bytes to a Base58 encoded [String]
     pub fn to_base58(&self) -> String {
         Utils::to_base58(self.0)
     }
 
+    /// Convert a [str] of Base58 encoded characters to a [Reference]
     pub fn from_base58(base58_str: &str) -> SolanaPayResult<Self> {
         let outcome = Utils::from_base58(base58_str)?;
 
@@ -52,7 +60,7 @@ impl fmt::Display for Reference {
 
 impl PartialEq for Reference {
     fn eq(&self, other: &Self) -> bool {
-        constant_time_eq_n(self.expose(), other.expose())
+        constant_time_eq_n(self.as_bytes(), other.as_bytes())
     }
 }
 
@@ -60,7 +68,7 @@ impl Eq for Reference {}
 
 impl AsRef<[u8]> for Reference {
     fn as_ref(&self) -> &[u8] {
-        self.expose()
+        self.as_bytes()
     }
 }
 
@@ -72,7 +80,7 @@ impl Default for Reference {
 
 impl Hash for Reference {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.expose().iter().for_each(|byte| {
+        self.as_ref().iter().for_each(|byte| {
             state.write_u8(*byte);
         });
     }

@@ -19,7 +19,7 @@ pub enum SolanaPayError {
     /// to prevent sending to a PDA without user's
     /// knowledge. Use `new_all_accounts()` if you
     /// want to support all types of recipients
-    #[error("The recipient is expected to be on curve to prevent sending to a PDA without user's knowledge. Use `new_all_accounts()` if you want to support all types of recipients")]
+    #[error("The recipient is expected to be on curve to prevent sending to a PDA without user's knowledge. Use `new_any_public_key()` if you want to support all types of recipients")]
     ExpectedRecipientPublicKeyOnCurve,
     /// The number of decimals in a number
     /// exceeds those of Native SOL (9 decimals)

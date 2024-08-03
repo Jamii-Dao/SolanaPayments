@@ -2,9 +2,11 @@ use percent_encoding::{percent_decode_str, utf8_percent_encode, NON_ALPHANUMERIC
 
 use crate::SolanaPayError;
 
+/// The scheme of a Solana Pay URL
 pub const SOLANA_SCHEME: &str = "solana:";
 
-/// Structure of a Solana Pay URL
+/// Structure of a Solana Pay URL.
+/// **Credit: ** [Solana Pay Docs](https://docs.solanapay.com/spec)
 ///
 /// solana:<recipient>
 ///     ?amount=<amount>
@@ -14,20 +16,69 @@ pub const SOLANA_SCHEME: &str = "solana:";
 ///     &message=<message>
 #[derive(Debug, Default, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct SolanaPayUrl {
+    /// A single recipient field is required as the pathname.
+    /// The value must be the base58-encoded public key of a native SOL account.
+    /// Associated token accounts must not be used.
+    /// Instead, to request an SPL Token transfer, the spl-token field must be used to specify an SPL Token mint,
+    /// from which the associated token address of the recipient must be derived.
     pub recipient: String,
+    /// A single amount field is allowed as an optional query parameter.
+    /// The value must be a non-negative integer or decimal number of "user" units.
+    /// For SOL, that's SOL and not lamports. For tokens, use uiAmountString and not amount.
+    /// 0 is a valid value. If the value is a decimal number less than 1,
+    /// it must have a leading `0`` before the `.`. Scientific notation is prohibited.
+    /// If a value is not provided, the wallet must prompt the user for the amount.
+    /// If the number of decimal places exceed what's supported for SOL (9) or the SPL Token (mint specific),
+    /// the wallet must reject the URL as malformed.
     pub amount: Option<String>,
+    /// A single spl-token field is allowed as an optional query parameter.
+    /// The value must be the base58-encoded public key of an SPL Token mint account.
+    /// If the field is provided, the Associated Token Account convention must be used,
+    /// and the wallet must include a `TokenProgram.Transfer` or `TokenProgram.TransferChecked` instruction
+    /// as the last instruction of the transaction.
+    /// If the field is not provided, the URL describes a native SOL transfer,
+    /// and the wallet must include a SystemProgram.Transfer instruction as the last instruction of the transaction instead.
+    /// The wallet must derive the ATA address from the recipient and spl-token fields.
+    /// Transfers to auxiliary token accounts are not supported.
     pub spl_token: Option<String>,
+    /// Multiple reference fields are allowed as optional query parameters.
+    /// The values must be base58-encoded 32 byte arrays.
+    /// These may or may not be public keys, on or off the curve, and may or may not correspond with accounts on Solana.
+    /// If the values are provided, the wallet must include them in the order provided as read-only,
+    /// non-signer keys to the `SystemProgram.Transfer` or `TokenProgram.Transfer/TokenProgram.TransferChecked`
+    /// instruction in the payment transaction. The values may or may not be unique to the payment request,
+    /// and may or may not correspond to an account on Solana. Because Solana validators index transactions
+    /// by these account keys, reference values can be used as client IDs
+    /// (IDs usable before knowing the eventual payment transaction).
+    /// The `getSignaturesForAddress` RPC method can be used locate transactions this way.
     pub references: Vec<String>,
+    /// A single label field is allowed as an optional query parameter.
+    /// The value must be a URL-encoded UTF-8 string that describes the source of the transfer request.
+    /// For example, this might be the name of a brand, store, application, or person making the request.
+    /// The wallet should URL-decode the value and display the decoded value to the user.
     pub label: Option<String>,
+    /// A single message field is allowed as an optional query parameter.
+    /// The value must be a URL-encoded UTF-8 string that describes the nature of the transfer request.
+    /// For example, this might be the name of an item being purchased, an order ID, or a thank you note.
+    /// The wallet should URL-decode the value and display the decoded value to the user.
     pub message: Option<String>,
+    /// A single memo field is allowed as an optional query parameter.
+    /// The value must be a URL-encoded UTF-8 string that must be included in an SPL Memo instruction in the payment transaction.
+    /// The wallet must URL-decode the value and should display the decoded value to the user.
+    /// The memo will be recorded by validators and should not include private or sensitive information.
+    /// If the field is provided, the wallet must include a MemoProgram instruction as the second to last
+    /// instruction of the transaction, immediately before the SOL or SPL Token transfer instruction,
+    /// to avoid ambiguity with other instructions in the transaction.
     pub spl_memo: Option<String>,
 }
 
 impl SolanaPayUrl {
+    /// Instantiate a new url
     pub fn new() -> Self {
         Self::default()
     }
 
+    /// Parse a Solana Pay URL
     pub fn parse(mut self, solana_pay_url: &str) -> Self {
         let decoded = percent_decode_str(solana_pay_url)
             .decode_utf8()
@@ -127,24 +178,33 @@ impl SolanaPayUrl {
         }
     }
 
+    /// Add a Base58 encoded Ed25519 public key for the recipient
     pub fn add_recipient(mut self, recipient: &str) -> Self {
         self.recipient = recipient.into();
 
         self
     }
 
+    /// A single amount field is allowed as an optional query parameter.
+    /// The value must be a non-negative integer or decimal number of "user" units. For SOL, that's SOL and not lamports.
     pub fn add_amount(mut self, amount: &str) -> Self {
         self.amount.replace(amount.into());
 
         self
     }
 
+    /// Add a Base58 encoded public key for the mint account
     pub fn add_spl_token(mut self, spl_token: &str) -> Self {
         self.spl_token.replace(spl_token.into());
 
         self
     }
 
+    /// Multiple reference fields are allowed as optional query parameters. The values must be base58-encoded 32 byte arrays.
+    /// These may or may not be public keys, on or off the curve, and may or may not correspond with accounts on Solana.
+    /// Because Solana validators index transactions by these account keys,
+    /// reference values can be used as client IDs (IDs usable before knowing the eventual payment transaction).
+    /// The getSignaturesForAddress RPC method can be used locate transactions this way.
     pub fn add_reference(mut self, reference: &str) -> Self {
         self.references.push(reference.into());
 
@@ -153,6 +213,7 @@ impl SolanaPayUrl {
         self
     }
 
+    /// Same as [SolanaPayUrl::add_reference] above but allows adding multiple references at once
     pub fn add_reference_multiple(mut self, references: &[&str]) -> Self {
         references.iter().for_each(|reference| {
             self.references.push(reference.to_string());
@@ -163,24 +224,28 @@ impl SolanaPayUrl {
         self
     }
 
+    /// Add a UTF-8 URL label
     pub fn add_label(mut self, label: &str) -> Self {
         self.label.replace(label.into());
 
         self
     }
 
+    /// Add a UTF-8 URL message
     pub fn add_message(mut self, message: &str) -> Self {
         self.message.replace(message.into());
 
         self
     }
 
+    /// Add a UTF-8 URL memo to be included in the SPL memo part of a transaction
     pub fn add_spl_memo(mut self, spl_memo: &str) -> Self {
         self.spl_memo.replace(spl_memo.into());
 
         self
     }
 
+    /// Convert [Self] to a Solana Pay  URL
     pub fn to_url(&self) -> String {
         String::from(SOLANA_SCHEME)
             + &self.recipient
@@ -248,7 +313,7 @@ impl SolanaPayUrl {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub enum QueryParam {
+enum QueryParam {
     Amount,
     SplToken,
     Reference,

@@ -2,12 +2,13 @@ use std::borrow::Cow;
 
 use crate::{SolanaPayError, SolanaPayResult};
 
+/// Number of decimal places equal to 1 SOL
 pub const NATIVE_SOL_DECIMAL_COUNT: u8 = 9;
 
-pub struct Utils;
+pub(crate) struct Utils;
 
 impl Utils {
-    pub fn from_base58(base58_str: &str) -> SolanaPayResult<[u8; 32]> {
+    pub(crate) fn from_base58(base58_str: &str) -> SolanaPayResult<[u8; 32]> {
         let mut buffer = [0u8; 32];
         bs58::decode(base58_str)
             .onto(&mut buffer)
@@ -16,11 +17,11 @@ impl Utils {
         Ok(buffer)
     }
 
-    pub fn to_base58(bytes: impl AsRef<[u8]>) -> String {
+    pub(crate) fn to_base58(bytes: impl AsRef<[u8]>) -> String {
         bs58::encode(bytes.as_ref()).into_string()
     }
 
-    pub fn is_on_curve25519(bytes: &[u8; 32]) -> SolanaPayResult<bool> {
+    pub(crate) fn is_on_curve25519(bytes: &[u8; 32]) -> SolanaPayResult<bool> {
         Ok(
             curve25519_dalek::edwards::CompressedEdwardsY::from_slice(bytes)
                 .map_err(|_| SolanaPayError::InvalidEd25519PublicKey)?
@@ -40,9 +41,15 @@ impl Utils {
     }
 }
 
+/// Random bytes generator that generates an array of bytes of length defined by
+/// `const N: usize` where `N` is the number of bytes to generate.
+/// This struct implements `Zeroize` so the memory region is automatically
+/// zeroes out when the [RandomBytes] goes out of scope.
+/// The random number generator is a CSPRNG generating entropy from the OS random number generator.
 pub struct RandomBytes<const N: usize>([u8; N]);
 
 impl<const N: usize> RandomBytes<N> {
+    /// Generate random bytes of length defined by `N`
     pub fn new() -> Self {
         use rand_chacha::ChaCha20Rng;
         use rand_core::{RngCore, SeedableRng};
@@ -58,10 +65,12 @@ impl<const N: usize> RandomBytes<N> {
         outcome
     }
 
+    /// Expose the bytes as a byte array
     pub fn expose(&self) -> &[u8; N] {
         &self.0
     }
 
+    /// Clone the bytes and return the byte array
     pub fn expose_owned(&self) -> [u8; N] {
         self.0
     }
