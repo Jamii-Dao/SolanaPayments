@@ -13,26 +13,29 @@ use crate::{
 /// #### Structure
 /// ```rust
 /// #[derive(Debug, PartialEq, Eq, Clone, Default, Hash)]
-/// pub struct SolanaPayment<'a, const N: usize> {
+/// pub struct SolanaPayment<'a,> {
 ///     recipient: PublicKey,
 ///     amount: Option<Number>,
 ///     spl_token: Option<PublicKey>,
-///     references: ArrayVec<Reference, N>,
+///     references: ArrayVec<Reference, 254>,
 ///     label: Option<Cow<'a, str>>,
 ///     message: Option<Cow<'a, str>>,
 ///     spl_memo: Option<Cow<'a, str>>,
 /// }
 /// ```
 #[derive(Debug, PartialEq, Eq, Clone, Default, Hash)]
-pub struct SolanaPayment<'a, const N: usize> {
+pub struct SolanaPayment<'a> {
     /// An Ed25519 public key of a recipient as defined by [Solana Pay Spec](https://docs.solanapay.com/spec#recipient)
     pub recipient: PublicKey,
     /// An amount as defined by [Solana Pay Spec](https://docs.solanapay.com/spec#amount)
     pub amount: Option<Number>,
     /// A SPL Token Public Key as defined by [Solana Pay Spec](https://docs.solanapay.com/spec#spl-token)
     pub spl_token: Option<PublicKey>,
-    /// One or multiple references as defined by [Solana Pay Spec](https://docs.solanapay.com/spec#reference)
-    pub references: ArrayVec<Reference, N>,
+    /// One or multiple references as defined by [Solana Pay Spec](https://docs.solanapay.com/spec#reference).
+    /// Maximum is 254 references since the max accounts per transaction
+    /// is 256 accounts when using lookup tables. This ensures there is two accounts
+    /// left for the mint and the recipient/associated token account
+    pub references: ArrayVec<Reference, 254>,
     /// A label as defined by [Solana Pay Spec](https://docs.solanapay.com/spec#label)
     pub label: Option<Cow<'a, str>>,
     /// A Message as defined by [Solana Pay Spec](https://docs.solanapay.com/spec#message)
@@ -41,7 +44,7 @@ pub struct SolanaPayment<'a, const N: usize> {
     pub spl_memo: Option<Cow<'a, str>>,
 }
 
-impl<'a, const N: usize> SolanaPayment<'a, N> {
+impl<'a> SolanaPayment<'a> {
     /// Instantiate a new struct with a Base58 encoded public key of the recipient.
     /// This returns an error if the Base58 encoded public key does not lie
     /// on the Curve25519 curve, i.e. The Public Key does not have a corresponding
