@@ -4,26 +4,33 @@
 A lightweight library for parsing and creating Solana Pay URLs written in Rust.
 
 #### Parsing a URL with an SPL Token and a lookup function
-```rust
- let transfer_1_sol = "solana:mvines9iiHiQTysrwkJjGf2gb9Ex9jXJX8ns3qwf2kN?amount=1&label=Michael&message=Thanks%20for%20all%20the%20fish&memo=OrderId12345";
+```rust,no_run
+#[tokio::main]
+async fn main() {
+use solana_payments::SolanaPayUrl;
+use solana_client::nonblocking::rpc_client::RpcClient;
+use spl_token_2022::{state::Mint, extension::StateWithExtensions};
 
-    // parsing requires a lookup function to be passed in that fetches the account
-    // data of the spl-token token mint account which the deserializes it's data to get 
-    // the number of decimals configured for the Mint
-    let lookup_fn = |public_key: [u8; 32]| async move {
-    let client = RpcClient::new("https://api.mainnet-beta.solana.com".into());
+let transfer_1_sol = "solana:mvines9iiHiQTysrwkJjGf2gb9Ex9jXJX8ns3qwf2kN?amount=1&label=Michael&message=Thanks%20for%20all%20the%20fish&memo=OrderId12345";
 
-    let public_key = solana_program::pubkey::Pubkey::new_from_array(public_key);
-    let account = client.get_account(&public_key).await.unwrap();
+// parsing requires a lookup function to be passed in that fetches the account
+// data of the spl-token token mint account which the deserializes it's data to get 
+// the number of decimals configured for the Mint
+let lookup_fn = |public_key: [u8; 32]| async move {
+let client = RpcClient::new("https://api.mainnet-beta.solana.com".into());
 
-    let mint = StateWithExtensions::<Mint>::unpack(&account.data).unwrap();
-        mint.base.decimals
-    };
+let public_key = solana_program::pubkey::Pubkey::new_from_array(public_key);
+let account = client.get_account(&public_key).await.unwrap();
 
-    let url  = "solana:mvines9iiHiQTysrwkJjGf2gb9Ex9jXJX8ns3qwf2kN?amount=0.01&spl-token=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
-    let url_decoded = SolanaPayUrl::new().parse(&url, lookup_fn).await.unwrap();
+let mint = StateWithExtensions::<Mint>::unpack(&account.data).unwrap();
+    mint.base.decimals
+};
 
-    dbg!(url_decoded);
+let url  = "solana:mvines9iiHiQTysrwkJjGf2gb9Ex9jXJX8ns3qwf2kN?amount=0.01&spl-token=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+let url_decoded = SolanaPayUrl::new().parse(&url, lookup_fn).await.unwrap();
+
+dbg!(url_decoded);
+}
 ```
 
 Which returns the following output
@@ -51,6 +58,8 @@ SolanaPayUrl {
 ```
 #### Parsing a URL for native SOL with a lookup function
 ```rust
+use solana_payments::SolanaPayUrl;
+
 let transfer_1_sol = "solana:mvines9iiHiQTysrwkJjGf2gb9Ex9jXJX8ns3qwf2kN?amount=1&label=Michael&message=Thanks%20for%20all%20the%20fish&memo=OrderId12345";
 
 // Return native SOL decimals
@@ -74,6 +83,8 @@ let transfer_1_sol_decoded = smol::block_on(async {
 
 #### Construct a Solana Pay URL from scratch
 ```rust
+use solana_payments::SolanaPayUrl;
+
 let url_encoded_str = SolanaPayUrl::default()
     .add_recipient("mvines9iiHiQTysrwkJjGf2gb9Ex9jXJX8ns3qwf2kN")
     .unwrap()
