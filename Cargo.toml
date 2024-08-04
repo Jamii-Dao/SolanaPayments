@@ -13,7 +13,3 @@ categories = ["cryptography::cryptocurrencies", "wasm"]
 homepage = "https://github.com/448-engineering/SolanaPay"
 repository = "https://github.com/448-engineering/SolanaPay"
 readme = "./README.md"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[workspace.dependencies]

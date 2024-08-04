@@ -55,4 +55,7 @@ pub enum SolanaPayError {
     /// Found duplicate memo in a Solana Pay URL
     #[error("Found duplicate memo in a Solana Pay URL")]
     MemoAlreadyExists,
+    /// Expected an async function to lookup the number of decimals in a mint
+    #[error("Expected an async function to lookup the number of decimals in a mint")]
+    ExpectedALookupFunction,
 }

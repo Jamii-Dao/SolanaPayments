@@ -1,12 +1,9 @@
 use core::fmt;
-use std::hash::Hash;
-
-use constant_time_eq::constant_time_eq_n;
 
 use crate::{RandomBytes, SolanaPayResult, Utils};
 
 /// A Reference field as defined by the [Solana Pay Spec](https://docs.solanapay.com/spec#reference)
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Reference([u8; 32]);
 
 impl Reference {
@@ -58,14 +55,6 @@ impl fmt::Display for Reference {
     }
 }
 
-impl PartialEq for Reference {
-    fn eq(&self, other: &Self) -> bool {
-        constant_time_eq_n(self.as_bytes(), other.as_bytes())
-    }
-}
-
-impl Eq for Reference {}
-
 impl AsRef<[u8]> for Reference {
     fn as_ref(&self) -> &[u8] {
         self.as_bytes()
@@ -75,13 +64,5 @@ impl AsRef<[u8]> for Reference {
 impl Default for Reference {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-impl Hash for Reference {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.as_ref().iter().for_each(|byte| {
-            state.write_u8(*byte);
-        });
     }
 }

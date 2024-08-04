@@ -2,9 +2,6 @@ use std::borrow::Cow;
 
 use crate::{SolanaPayError, SolanaPayResult};
 
-/// Number of decimal places equal to 1 SOL
-pub const NATIVE_SOL_DECIMAL_COUNT: u8 = 9;
-
 pub(crate) struct Utils;
 
 impl Utils {
@@ -38,6 +35,10 @@ impl Utils {
 
     pub fn url_encode(value: &str) -> String {
         percent_encoding::utf8_percent_encode(value, percent_encoding::NON_ALPHANUMERIC).to_string()
+    }
+
+    pub async fn native_sol(_value: [u8; 32]) -> usize {
+        9
     }
 }
 

@@ -5,9 +5,6 @@
 )]
 #![doc = include_str!("../../README.md")]
 
-mod url;
-pub use url::*;
-
 mod errors;
 pub use errors::*;
 
@@ -25,3 +22,6 @@ pub use references::*;
 
 mod parser;
 pub use parser::*;
+
+mod types;
+pub use types::*;
