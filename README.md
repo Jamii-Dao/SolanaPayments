@@ -4,7 +4,7 @@
 A lightweight library for parsing and creating Solana Pay URLs written in Rust.
 
 #### Parsing a URL with an SPL Token and a lookup function
-```rust,no_run
+```rust ,no_run
 #[tokio::main]
 async fn main() {
 use solana_payments::SolanaPayUrl;
