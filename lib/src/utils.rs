@@ -2,10 +2,12 @@ use std::borrow::Cow;
 
 use crate::{SolanaPayError, SolanaPayResult};
 
-pub(crate) struct Utils;
+/// Helpers for repetitive tasks
+pub struct Utils;
 
 impl Utils {
-    pub(crate) fn from_base58(base58_str: &str) -> SolanaPayResult<[u8; 32]> {
+    /// Convert a Base58 encoded [str] to a 32 byte array
+    pub fn from_base58(base58_str: &str) -> SolanaPayResult<[u8; 32]> {
         let mut buffer = [0u8; 32];
         bs58::decode(base58_str)
             .onto(&mut buffer)
@@ -14,11 +16,13 @@ impl Utils {
         Ok(buffer)
     }
 
-    pub(crate) fn to_base58(bytes: impl AsRef<[u8]>) -> String {
+    /// Convert a slice into a Base58 encoded [String]
+    pub fn to_base58(bytes: impl AsRef<[u8]>) -> String {
         bs58::encode(bytes.as_ref()).into_string()
     }
 
-    pub(crate) fn is_on_curve25519(bytes: &[u8; 32]) -> SolanaPayResult<bool> {
+    /// Check whether some 32 bytes are on the curve defined by Curve25519
+    pub fn is_on_curve25519(bytes: &[u8; 32]) -> SolanaPayResult<bool> {
         Ok(
             curve25519_dalek::edwards::CompressedEdwardsY::from_slice(bytes)
                 .decompress()
@@ -26,16 +30,19 @@ impl Utils {
         )
     }
 
+    /// Decode a UTF-8 url encoded [str]
     pub fn url_decode(value: &str) -> SolanaPayResult<Cow<str>> {
         percent_encoding::percent_decode_str(value)
             .decode_utf8()
             .map_err(|_| SolanaPayError::InvalidUrlEncodedString)
     }
 
+    /// Encode a string into a URL encoded UTF-8 [String]
     pub fn url_encode(value: &str) -> String {
         percent_encoding::utf8_percent_encode(value, percent_encoding::NON_ALPHANUMERIC).to_string()
     }
 
+    /// Return the number of decimals for native SOL
     pub async fn native_sol(_value: [u8; 32]) -> u8 {
         9
     }
