@@ -102,7 +102,7 @@ impl<'a> SolanaPayUrl<'a> {
         };
 
         if let Some(base58_public_key) = first_split.first() {
-            self.recipient = PublicKey::from_base58(&base58_public_key)?;
+            self.recipient = PublicKey::from_base58(base58_public_key)?;
         } else {
             panic!("SolanaPayUrlPartsEmpty");
         };
@@ -144,12 +144,13 @@ impl<'a> SolanaPayUrl<'a> {
 
                     // If this is true then the amount is native SOL and therefore
                     // check the number of decimals don't exceed 9 decimal places
-                    if self.amount.is_some() && self.spl_token.is_none() {
-                        if self.amount.as_ref().unwrap().total_fractional_count
+
+                    if self.amount.is_some()
+                        && self.spl_token.is_none()
+                        && self.amount.as_ref().unwrap().total_fractional_count
                             > crate::NATIVE_SOL_DECIMAL_COUNT as usize
-                        {
-                            return Err(SolanaPayError::NumberOfDecimalsExceeds9);
-                        }
+                    {
+                        return Err(SolanaPayError::NumberOfDecimalsExceeds9);
                     }
                 }
 
@@ -320,7 +321,7 @@ impl<'a> SolanaPayUrl<'a> {
             if (amount_exists.leading_zeroes + amount_exists.significant_digits_count)
                 > mint_decimals
             {
-                return Err(SolanaPayError::NumberOfDecimalsExceedsMintConfiguration);
+                Err(SolanaPayError::NumberOfDecimalsExceedsMintConfiguration)
             } else {
                 Ok(())
             }
