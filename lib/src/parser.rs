@@ -7,14 +7,16 @@ use crate::{Number, PublicKey, Reference, SolanaPayError, SolanaPayResult, Utils
 // TODO Create program derived addresses
 
 /// Structure of a Solana Pay URL.
-/// **Credit: ** [Solana Pay Docs](https://docs.solanapay.com/spec)
+/// ***Credit:*** [Solana Pay Docs](https://docs.solanapay.com/spec)
 ///
+/// ```sh
 /// solana:<recipient>
 ///     ?amount=<amount>
 ///     &spl-token=<spl-token>
 ///     &reference=<reference>
 ///     &label=<label>
 ///     &message=<message>
+/// ```
 #[derive(Debug, Default, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct SolanaPayUrl<'a> {
     /// A single recipient field is required as the pathname.
@@ -27,7 +29,7 @@ pub struct SolanaPayUrl<'a> {
     /// The value must be a non-negative integer or decimal number of "user" units.
     /// For SOL, that's SOL and not lamports. For tokens, use uiAmountString and not amount.
     /// 0 is a valid value. If the value is a decimal number less than 1,
-    /// it must have a leading `0`` before the `.`. Scientific notation is prohibited.
+    /// it must have a leading `0` before the `.`. Scientific notation is prohibited.
     /// If a value is not provided, the wallet must prompt the user for the amount.
     /// If the number of decimal places exceed what's supported for SOL (9) or the SPL Token (mint specific),
     /// the wallet must reject the URL as malformed.
@@ -81,10 +83,7 @@ impl<'a> SolanaPayUrl<'a> {
     }
 
     /// Parse a Solana Pay URL
-    pub async fn parse<
-        F: Fn([u8; 32]) -> Fut,
-        Fut: Future<Output = usize> + Send + 'static + Sync,
-    >(
+    pub async fn parse<F: Fn([u8; 32]) -> Fut, Fut: Future<Output = u8> + Send + 'static>(
         mut self,
         solana_pay_url: &'a str,
         lookup_fn: F,
@@ -308,10 +307,7 @@ impl<'a> SolanaPayUrl<'a> {
             + &self.prepare_spl_memo()
     }
 
-    async fn resolve_decimals<
-        F: Fn([u8; 32]) -> Fut,
-        Fut: Future<Output = usize> + Send + 'static + Sync,
-    >(
+    async fn resolve_decimals<F: Fn([u8; 32]) -> Fut, Fut: Future<Output = u8> + Send + 'static>(
         &self,
         lookup_fn: F,
     ) -> SolanaPayResult<()> {
@@ -319,7 +315,7 @@ impl<'a> SolanaPayUrl<'a> {
 
         self.amount.as_ref().map_or(Ok(()), |amount_exists| {
             if (amount_exists.leading_zeroes + amount_exists.significant_digits_count)
-                > mint_decimals
+                > mint_decimals as usize
             {
                 Err(SolanaPayError::NumberOfDecimalsExceedsMintConfiguration)
             } else {

@@ -21,7 +21,6 @@ impl Utils {
     pub(crate) fn is_on_curve25519(bytes: &[u8; 32]) -> SolanaPayResult<bool> {
         Ok(
             curve25519_dalek::edwards::CompressedEdwardsY::from_slice(bytes)
-                .map_err(|_| SolanaPayError::InvalidEd25519PublicKey)?
                 .decompress()
                 .is_some(),
         )
@@ -37,7 +36,7 @@ impl Utils {
         percent_encoding::utf8_percent_encode(value, percent_encoding::NON_ALPHANUMERIC).to_string()
     }
 
-    pub async fn native_sol(_value: [u8; 32]) -> usize {
+    pub async fn native_sol(_value: [u8; 32]) -> u8 {
         9
     }
 }
