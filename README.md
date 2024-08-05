@@ -1,4 +1,6 @@
 ## solana-payments
+![crates.io](https://img.shields.io/crates/v/solana-payments.svg) [![Docs](https://docs.rs/solana-payments/badge.svg)](https://docs.rs/solana-payments) [![Rust](https://github.com/JamiiDao/SolanaPayments/actions/workflows/rust.yml/badge.svg)](https://github.com/JamiiDao/SolanaPayments/actions/workflows/rust.yml)
+
 <img src="https://raw.githubusercontent.com/448-engineering/SolanaPayments/master/Brand-Collateral/solana-payments-icon.svg" alt="Solana Payments Logo" width=50%>
 
 A lightweight library for parsing and creating Solana Pay URLs written in Rust.
