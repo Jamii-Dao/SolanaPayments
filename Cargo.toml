@@ -4,7 +4,7 @@ members = ["lib"]
 resolver = "2"
 
 [workspace.package]
-version = "0.3.1"
+version = "1.0.0"
 authors = ["448-OG <superuser@448.africa>"]
 license = "CC0-1.0"
 edition = "2021"

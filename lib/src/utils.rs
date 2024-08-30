@@ -25,6 +25,7 @@ impl Utils {
     pub fn is_on_curve25519(bytes: &[u8; 32]) -> SolanaPayResult<bool> {
         Ok(
             curve25519_dalek::edwards::CompressedEdwardsY::from_slice(bytes)
+                .map_err(|_| SolanaPayError::Expected32ByteSlice)?
                 .decompress()
                 .is_some(),
         )

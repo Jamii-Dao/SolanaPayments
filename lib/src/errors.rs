@@ -58,4 +58,7 @@ pub enum SolanaPayError {
     /// Expected an async function to lookup the number of decimals in a mint
     #[error("Expected an async function to lookup the number of decimals in a mint")]
     ExpectedALookupFunction,
+    /// The slice provided is not 32 bytes
+    #[error("The slice provided is not 32 bytes")]
+    Expected32ByteSlice,
 }
